@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { useEffect, useState, useCallback } from "react";
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useStreakStore } from "../../store/streakStore";
 import { useThemeColors } from "../../theme/useThemeColors";
+import { WeatherSkeleton } from "../../components/Skeleton";
 import type { WeatherData } from "@ticktick/shared";
 
 const weatherIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -27,42 +28,47 @@ export default function WeatherScreen() {
   const colors = useThemeColors();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const streakState = useStreakStore();
 
   useEffect(() => {
     streakState.initializeDay();
   }, [streakState]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(
-          "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum&timezone=auto"
-        );
-        const data = await res.json();
-        const c = data.current;
-        const forecast = (data.daily.time as string[]).map((date: string, i: number) => ({
-          date,
-          tempHigh: data.daily.temperature_2m_max[i],
-          tempLow: data.daily.temperature_2m_min[i],
-          description: weatherDescs[data.daily.weather_code[i]] || "Partly cloudy",
-          icon: "02d",
-          precipitation: data.daily.precipitation_sum[i],
-        }));
-        setWeather({
-          temperature: c.temperature_2m,
-          feelsLike: c.apparent_temperature,
-          humidity: c.relative_humidity_2m,
-          description: weatherDescs[c.weather_code] || "Unknown",
-          icon: "01d",
-          windSpeed: c.wind_speed_10m,
-          location: "New York, NY",
-          forecast,
-        });
-      } catch { /* ignore */ }
-      setLoading(false);
-    })();
+  const fetchWeather = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    try {
+      const res = await fetch(
+        "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum&timezone=auto"
+      );
+      const data = await res.json();
+      const c = data.current;
+      const forecast = (data.daily.time as string[]).map((date: string, i: number) => ({
+        date,
+        tempHigh: data.daily.temperature_2m_max[i],
+        tempLow: data.daily.temperature_2m_min[i],
+        description: weatherDescs[data.daily.weather_code[i]] || "Partly cloudy",
+        icon: "02d",
+        precipitation: data.daily.precipitation_sum[i],
+      }));
+      setWeather({
+        temperature: c.temperature_2m,
+        feelsLike: c.apparent_temperature,
+        humidity: c.relative_humidity_2m,
+        description: weatherDescs[c.weather_code] || "Unknown",
+        icon: "01d",
+        windSpeed: c.wind_speed_10m,
+        location: "New York, NY",
+        forecast,
+      });
+    } catch { /* ignore */ }
+    setLoading(false);
+    setRefreshing(false);
   }, []);
+
+  useEffect(() => {
+    fetchWeather();
+  }, [fetchWeather]);
 
   useEffect(() => {
     if (weather) {
@@ -74,15 +80,26 @@ export default function WeatherScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.bg }}>
-        <ActivityIndicator size="large" color={colors.sky} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
+        <WeatherSkeleton />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchWeather(true)}
+            tintColor={colors.sky}
+            colors={[colors.sky]}
+          />
+        }
+      >
         {/* Header */}
         <View style={{ marginBottom: 20 }}>
           <Text style={{ fontSize: 28, fontWeight: "800", color: colors.cream }}>Weather</Text>

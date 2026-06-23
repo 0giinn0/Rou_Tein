@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useStreakStore } from "../../store/streakStore";
 import { useTaskStore } from "../../store/taskStore";
 import { useThemeColors } from "../../theme/useThemeColors";
+import { ProfileSkeleton } from "../../components/Skeleton";
 import { hapticLight, hapticSuccess, hapticError } from "../../lib/haptics";
 import { BADGES, THEMES, STREAK_FREEZE_COST } from "@ticktick/shared";
 import { signIn, signUp, signOut, getSession } from "../../lib/auth";
@@ -20,6 +21,8 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     getSession().then(({ session }) => {
@@ -29,11 +32,39 @@ export default function ProfileScreen() {
   }, []);
 
   const handleAuth = async () => {
-    if (!email.trim() || !password.trim()) return;
+    let valid = true;
+    const emailTrim = email.trim();
+    const passTrim = password.trim();
+
+    if (!emailTrim) {
+      setEmailError("Email is required");
+      valid = false;
+    } else if (!/\S+@\S+\.\S+/.test(emailTrim)) {
+      setEmailError("Enter a valid email");
+      valid = false;
+    } else {
+      setEmailError("");
+    }
+
+    if (!passTrim) {
+      setPasswordError("Password is required");
+      valid = false;
+    } else if (passTrim.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      valid = false;
+    } else {
+      setPasswordError("");
+    }
+
+    if (!valid) {
+      hapticError();
+      return;
+    }
+
     setLoading(true);
     const { user: authUser, error } = isLogin
-      ? await signIn(email, password)
-      : await signUp(email, password);
+      ? await signIn(emailTrim, passTrim)
+      : await signUp(emailTrim, passTrim);
     setLoading(false);
     if (error) {
       hapticError();
@@ -130,8 +161,8 @@ export default function ProfileScreen() {
 
   if (!sessionChecked) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={colors.coral} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
+        <ProfileSkeleton />
       </SafeAreaView>
     );
   }
@@ -203,15 +234,18 @@ export default function ProfileScreen() {
                   paddingVertical: 14,
                   fontSize: 15,
                   color: colors.cream,
-                  marginBottom: 12,
+                  marginBottom: emailError ? 4 : 12,
+                  borderWidth: emailError ? 1 : 0,
+                  borderColor: emailError ? colors.coral : "transparent",
                 }}
                 placeholder="Email"
                 placeholderTextColor={colors.muted}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(t) => { setEmail(t); if (emailError) setEmailError(""); }}
               />
+              {emailError ? <Text style={{ fontSize: 12, color: colors.coral, marginBottom: 12 }}>{emailError}</Text> : null}
               <TextInput
                 style={{
                   backgroundColor: colors.surfaceVariant,
@@ -220,14 +254,17 @@ export default function ProfileScreen() {
                   paddingVertical: 14,
                   fontSize: 15,
                   color: colors.cream,
-                  marginBottom: 12,
+                  marginBottom: passwordError ? 4 : 12,
+                  borderWidth: passwordError ? 1 : 0,
+                  borderColor: passwordError ? colors.coral : "transparent",
                 }}
                 placeholder="Password"
                 placeholderTextColor={colors.muted}
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(t) => { setPassword(t); if (passwordError) setPasswordError(""); }}
               />
+              {passwordError ? <Text style={{ fontSize: 12, color: colors.coral, marginBottom: 12 }}>{passwordError}</Text> : null}
               <TouchableOpacity
                 onPress={handleAuth}
                 disabled={loading}

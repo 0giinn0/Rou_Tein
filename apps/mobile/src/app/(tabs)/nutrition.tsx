@@ -47,6 +47,7 @@ export default function NutritionScreen() {
   const [selectedMealType, setSelectedMealType] = useState<MealType>("breakfast");
   const [selectedFood, setSelectedFood] = useState(foodDatabase[0]?.id || "");
   const [servings, setServings] = useState("1");
+  const [servingsError, setServingsError] = useState("");
 
   useEffect(() => {
     streakState.initializeDay();
@@ -59,6 +60,13 @@ export default function NutritionScreen() {
   }, [day.meals.length, streakState]);
 
   const handleAdd = () => {
+    const servingNum = Number(servings);
+    if (isNaN(servingNum) || servingNum <= 0) {
+      setServingsError("Enter a valid number greater than 0");
+      hapticLight();
+      return;
+    }
+    setServingsError("");
     hapticSuccess();
     const food = foodDatabase.find((f) => f.id === selectedFood);
     if (!food) return;
@@ -66,7 +74,7 @@ export default function NutritionScreen() {
       id: generateId(),
       mealType: selectedMealType,
       food,
-      servings: Number(servings) || 1,
+      servings: servingNum,
       date: today,
       time: new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" }),
     });
@@ -310,14 +318,17 @@ export default function NutritionScreen() {
                 paddingVertical: 14,
                 fontSize: 15,
                 color: colors.cream,
-                marginBottom: 16,
+                marginBottom: servingsError ? 6 : 16,
+                borderWidth: servingsError ? 1 : 0,
+                borderColor: servingsError ? colors.coral : "transparent",
               }}
               placeholder="Servings"
               placeholderTextColor={colors.muted}
               keyboardType="decimal-pad"
               value={servings}
-              onChangeText={setServings}
+              onChangeText={(t) => { setServings(t); if (servingsError) setServingsError(""); }}
             />
+            {servingsError ? <Text style={{ fontSize: 12, color: colors.coral, marginBottom: 16 }}>{servingsError}</Text> : null}
 
             <View style={{ flexDirection: "row", gap: 12 }}>
               <TouchableOpacity

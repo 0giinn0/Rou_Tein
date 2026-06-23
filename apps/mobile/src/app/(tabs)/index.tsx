@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,9 +15,10 @@ import { useStreakStore } from "../../store/streakStore";
 import { InteractiveSphere } from "../../components/InteractiveSphere";
 import { ProgressRing } from "../../components/ProgressRing";
 import { DailyQuiz } from "../../components/DailyQuiz";
+import { ActivityChart } from "../../components/ActivityChart";
 import { useThemeColors } from "../../theme/useThemeColors";
 import { hapticLight } from "../../lib/haptics";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 
 const { width } = Dimensions.get("window");
 
@@ -52,6 +53,16 @@ export default function HomeScreen() {
   const calPct = day.goalCalories > 0 ? Math.min((day.totalCalories / day.goalCalories) * 100, 100) : 0;
   const todayProgress = streakState.getTodayProgress();
   const challenges = streakState.challenges;
+
+  const activityData = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = format(subDays(new Date(), i), "yyyy-MM-dd");
+      const count = tasks.filter((t) => t.status === "completed" && t.dueDate?.startsWith(date)).length;
+      days.push({ date, count });
+    }
+    return days;
+  }, [tasks]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
@@ -263,6 +274,9 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
+
+        {/* Activity Chart */}
+        <ActivityChart data={activityData} />
 
         {/* Navigation Cards */}
         <View style={{ gap: 10, marginBottom: 20 }}>

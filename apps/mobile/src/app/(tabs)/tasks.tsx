@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
+import { useState, useEffect, useMemo } from "react";
+import { View, Text, TextInput, TouchableOpacity, SectionList, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Swipeable } from "react-native-gesture-handler";
 import { useTaskStore } from "../../store/taskStore";
 import { useStreakStore } from "../../store/streakStore";
 import { useThemeColors } from "../../theme/useThemeColors";
-import { hapticLight, hapticSuccess } from "../../lib/haptics";
+import { hapticLight, hapticSuccess, hapticWarning } from "../../lib/haptics";
 import type { Task, TaskPriority } from "@ticktick/shared";
 import { format } from "date-fns";
 
 function generateId() {
   return Math.random().toString(36).substring(2, 11);
 }
+
+const priorityOptions: { key: TaskPriority; label: string; colorKey: string }[] = [
+  { key: "high", label: "High", colorKey: "coral" },
+  { key: "medium", label: "Medium", colorKey: "amber" },
+  { key: "low", label: "Low", colorKey: "emerald" },
+];
 
 export default function TasksScreen() {
   const colors = useThemeColors();
@@ -20,11 +27,13 @@ export default function TasksScreen() {
   const [newTitle, setNewTitle] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("medium");
+  const [titleError, setTitleError] = useState("");
+  const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
 
-  const priorityColors: Record<TaskPriority, string> = {
-    high: colors.coral,
-    medium: colors.amber,
-    low: colors.emerald,
+  const priorityColors: Record<string, string> = {
+    coral: colors.coral,
+    amber: colors.amber,
+    emerald: colors.emerald,
   };
 
   useEffect(() => {
@@ -42,12 +51,37 @@ export default function TasksScreen() {
     }
   }, [todayCompleted, streakState]);
 
+  const filteredTasks = useMemo(() => {
+    if (filter === "all") return tasks;
+    return tasks.filter((t) => t.status === filter);
+  }, [tasks, filter]);
+
+  const sections = useMemo(() => {
+    const pending = filteredTasks.filter((t) => t.status !== "completed");
+    const completed = filteredTasks.filter((t) => t.status === "completed");
+    const result: { title: string; data: Task[] }[] = [];
+    if (pending.length > 0) result.push({ title: "Pending", data: pending });
+    if (completed.length > 0) result.push({ title: "Completed", data: completed });
+    if (result.length === 0) result.push({ title: "Pending", data: [] });
+    return result;
+  }, [filteredTasks]);
+
   const handleAdd = () => {
-    if (!newTitle.trim()) return;
+    const trimmed = newTitle.trim();
+    if (!trimmed) {
+      setTitleError("Task name is required");
+      hapticWarning();
+      return;
+    }
+    if (trimmed.length < 2) {
+      setTitleError("Task name must be at least 2 characters");
+      hapticWarning();
+      return;
+    }
     hapticLight();
     const task: Task = {
       id: generateId(),
-      title: newTitle,
+      title: trimmed,
       priority: selectedPriority,
       status: "pending",
       listId: "inbox",
@@ -60,6 +94,7 @@ export default function TasksScreen() {
     };
     addTask(task);
     setNewTitle("");
+    setTitleError("");
     setSelectedPriority("medium");
     setModalVisible(false);
   };
@@ -80,6 +115,47 @@ export default function TasksScreen() {
   const completedCount = tasks.filter((t) => t.status === "completed").length;
   const totalCount = tasks.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+  const renderRightActions = (id: string) => (
+    <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 12 }}>
+      <TouchableOpacity
+        onPress={() => {
+          hapticSuccess();
+          deleteTask(id);
+        }}
+        style={{
+          backgroundColor: colors.coral,
+          width: 72,
+          height: "100%",
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Ionicons name="trash" size={22} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const FilterButton = ({ label, value }: { label: string; value: typeof filter }) => (
+    <TouchableOpacity
+      onPress={() => {
+        hapticLight();
+        setFilter(value);
+      }}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 12,
+        backgroundColor: filter === value ? colors.cream : colors.surfaceVariant,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 13, fontWeight: "700", color: filter === value ? colors.bg : colors.muted }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
@@ -113,10 +189,25 @@ export default function TasksScreen() {
           </Text>
         </View>
 
-        <FlatList
-          data={tasks}
+        {/* Filter tabs */}
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+          <FilterButton label="All" value="all" />
+          <FilterButton label="Pending" value="pending" />
+          <FilterButton label="Done" value="completed" />
+        </View>
+
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ gap: 10, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          stickySectionHeadersEnabled={false}
+          renderSectionHeader={({ section }) =>
+            section.data.length > 0 ? (
+              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, marginTop: 4 }}>
+                {section.title}
+              </Text>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={{ alignItems: "center", marginTop: 60 }}>
               <View
@@ -134,67 +225,73 @@ export default function TasksScreen() {
               </View>
               <Text style={{ fontSize: 18, fontWeight: "700", color: colors.cream, marginBottom: 6 }}>No tasks yet</Text>
               <Text style={{ fontSize: 13, color: colors.muted, textAlign: "center" }}>
-                Tap the + button to add your first task and start your streak.
+                {filter !== "all" ? "No tasks match this filter." : "Tap + to add your first task and start your streak."}
               </Text>
             </View>
           }
           renderItem={({ item }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-                backgroundColor: colors.surface,
-                padding: 16,
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
+            <Swipeable
+              renderRightActions={() => renderRightActions(item.id)}
+              overshootRight={false}
             >
-              <TouchableOpacity onPress={() => toggleTask(item.id)}>
-                <View
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 12,
-                    borderWidth: 2,
-                    borderColor: item.status === "completed" ? colors.emerald : colors.muted,
-                    backgroundColor: item.status === "completed" ? colors.emerald : "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.status === "completed" && <Ionicons name="checkmark" size={16} color={colors.bg} />}
-                </View>
-              </TouchableOpacity>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "500",
-                    color: item.status === "completed" ? colors.muted : colors.cream,
-                    textDecorationLine: item.status === "completed" ? "line-through" : "none",
-                  }}
-                >
-                  {item.title}
-                </Text>
-                {item.dueDate && (
-                  <Text style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
-                    {format(new Date(item.dueDate), "MMM d")}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  backgroundColor: colors.surface,
+                  padding: 16,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginBottom: 10,
+                }}
+              >
+                <TouchableOpacity onPress={() => toggleTask(item.id)}>
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: item.status === "completed" ? colors.emerald : colors.muted,
+                      backgroundColor: item.status === "completed" ? colors.emerald : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.status === "completed" && <Ionicons name="checkmark" size={16} color={colors.bg} />}
+                  </View>
+                </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "500",
+                      color: item.status === "completed" ? colors.muted : colors.cream,
+                      textDecorationLine: item.status === "completed" ? "line-through" : "none",
+                    }}
+                  >
+                    {item.title}
                   </Text>
-                )}
+                  {item.dueDate && (
+                    <Text style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
+                      {format(new Date(item.dueDate), "MMM d")}
+                    </Text>
+                  )}
+                </View>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: priorityColors[item.priority] }} />
               </View>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: priorityColors[item.priority] }} />
-              <TouchableOpacity onPress={() => deleteTask(item.id)}>
-                <Ionicons name="trash-outline" size={18} color={colors.muted} />
-              </TouchableOpacity>
-            </View>
+            </Swipeable>
           )}
         />
 
         <TouchableOpacity
           onPress={() => {
             hapticLight();
+            setNewTitle("");
+            setTitleError("");
+            setSelectedPriority("medium");
             setModalVisible(true);
           }}
           style={{
@@ -238,30 +335,41 @@ export default function TasksScreen() {
                 paddingVertical: 14,
                 fontSize: 15,
                 color: colors.cream,
-                marginBottom: 16,
+                marginBottom: titleError ? 6 : 16,
+                borderWidth: titleError ? 1 : 0,
+                borderColor: titleError ? colors.coral : "transparent",
               }}
               placeholder="What needs to be done?"
               placeholderTextColor={colors.muted}
               value={newTitle}
-              onChangeText={setNewTitle}
+              onChangeText={(t) => {
+                setNewTitle(t);
+                if (titleError) setTitleError("");
+              }}
               autoFocus
+              maxLength={100}
             />
+            {titleError ? (
+              <Text style={{ fontSize: 12, color: colors.coral, marginBottom: 16, marginTop: 0 }}>
+                {titleError}
+              </Text>
+            ) : null}
             <Text style={{ fontSize: 12, color: colors.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
               Priority
             </Text>
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 24 }}>
-              {(["low", "medium", "high"] as TaskPriority[]).map((p) => (
+              {priorityOptions.map((p) => (
                 <TouchableOpacity
-                  key={p}
+                  key={p.key}
                   onPress={() => {
                     hapticLight();
-                    setSelectedPriority(p);
+                    setSelectedPriority(p.key);
                   }}
                   style={{
                     flex: 1,
                     paddingVertical: 10,
                     borderRadius: 12,
-                    backgroundColor: selectedPriority === p ? priorityColors[p] : colors.surfaceVariant,
+                    backgroundColor: selectedPriority === p.key ? priorityColors[p.colorKey] : colors.surfaceVariant,
                     alignItems: "center",
                   }}
                 >
@@ -269,11 +377,11 @@ export default function TasksScreen() {
                     style={{
                       fontSize: 13,
                       fontWeight: "700",
-                      color: selectedPriority === p ? colors.bg : colors.cream,
+                      color: selectedPriority === p.key ? colors.bg : colors.cream,
                       textTransform: "capitalize",
                     }}
                   >
-                    {p}
+                    {p.label}
                   </Text>
                 </TouchableOpacity>
               ))}
