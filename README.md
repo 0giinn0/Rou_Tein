@@ -13,6 +13,9 @@ A habit-building productivity app with streaks, daily challenges, quizzes, tasks
 - **Tasks** — TickTick-style task list with priorities and completion tracking
 - **Nutrition** — Macro rings and meal logging by breakfast, lunch, dinner, and snacks
 - **Weather** — 7-day forecast, current conditions, and a gamified weather challenge
+- **Gamification** — Badges, unlockable themes, level-up rewards, and streak freeze protection
+- **Cloud Sync** — Back up and restore your tasks and streaks with Supabase
+- **Push Notifications** — Daily reminders and streak warnings
 - **Shared Logic** — Streak state, quiz data, and types live in `packages/shared` and are consumed by both mobile and web
 
 ## Project Structure
@@ -21,18 +24,22 @@ A habit-building productivity app with streaks, daily challenges, quizzes, tasks
 Habit Tracking Application/
 ├── apps/
 │   ├── mobile/          # Expo Router React Native app (primary)
-│   └── web/             # Next.js web app
+│   ├── web/             # Next.js web app
+│   └── watch/           # Companion watch-face web app
 ├── packages/
 │   ├── shared/          # Shared types, quiz data, and streak utilities
 │   └── ui/              # Shared React UI components (web)
+├── supabase/
+│   └── migrations/      # Database schema migrations
 ├── package.json         # Workspace root
 └── README.md
 ```
 
 ## Tech Stack
 
-- **Mobile:** React Native, Expo Router, TypeScript, Zustand, `@react-three/fiber/native`, `expo-gl`, Three.js
+- **Mobile:** React Native, Expo Router, TypeScript, Zustand, `@react-three/fiber/native`, `expo-gl`, Three.js, `react-native-reanimated`, `expo-haptics`, `expo-notifications`
 - **Web:** Next.js 14, React, TypeScript, Tailwind CSS, Zustand, `@react-three/fiber`, Framer Motion
+- **Backend:** Supabase (Postgres + Auth)
 - **Shared:** TypeScript utilities consumed by both apps
 
 ## Getting Started
@@ -42,16 +49,24 @@ Habit Tracking Application/
 - Node.js 18+
 - npm
 - Expo Go app (for mobile development)
+- Supabase project (for cloud sync)
 
 ### Install Dependencies
 
 From the repository root:
 
 ```bash
-npm install --legacy-peer-deps --ignore-scripts
+npm install --legacy-peer-deps
 ```
 
-> `--ignore-scripts` is currently used because `react-native-screens` has a postinstall script that fails in this environment. Skipping it does not affect running the app through Expo, since Metro bundles code at runtime.
+### Environment Variables
+
+Create `apps/mobile/.env.local` with your Supabase credentials:
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
 ### Run the Mobile App
 
@@ -73,14 +88,20 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
+### Run Tests
+
+```bash
+npm test
+```
+
 ### Build for Production
 
-**Mobile:**
+**Mobile (EAS):**
 
 ```bash
 cd apps/mobile
-npx expo export --platform ios
-npx expo export --platform android
+eas build --platform ios
+eas build --platform android
 ```
 
 **Web:**
@@ -99,8 +120,16 @@ npm run build
 | Weather Watcher | Check today's weather | 15 XP, 5 coins |
 | Brain Boost | Complete the daily quiz | 40 XP, 15 coins |
 
+## Gamification
+
+- **Badges** — Unlock achievements for streaks, levels, perfect days, and more
+- **Themes** — Spend coins to unlock color themes
+- **Streak Freeze** — Buy protection for missed days
+- **Level Rewards** — Earn bonus coins every time you level up
+
 ## Notes
 
 - The mobile app is the primary target and uses Expo SDK 51.
 - The web app is maintained alongside mobile and shares streak/quiz logic through `packages/shared`.
 - Streak progress is persisted on mobile using `@react-native-async-storage/async-storage` and on web using `localStorage` via Zustand persist.
+- Cloud sync is optional and requires a Supabase project. Apply the migrations in `supabase/migrations/` to your project.

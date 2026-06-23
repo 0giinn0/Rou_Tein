@@ -1,0 +1,12 @@
+Rou_Tein is a beautiful, gamified habit tracker inspired by the best streak apps. Build daily routines, complete challenges, track nutrition and weather, earn coins, unlock badges and themes, and keep your streak alive with streak freezes.
+
+Features:
+- Interactive 3D streak sphere
+- Daily challenges and quizzes
+- Task management
+- Nutrition tracking
+- Weather forecast
+- XP, levels, coins, and badges
+- Streak freeze protection
+- Cloud sync with Supabase
+- Daily reminder notifications

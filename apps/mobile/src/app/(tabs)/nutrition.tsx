@@ -12,7 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNutritionStore } from "../../store/nutritionStore";
 import { useStreakStore } from "../../store/streakStore";
 import { ProgressRing } from "../../components/ProgressRing";
-import { colors } from "../../theme/colors";
+import { useThemeColors } from "../../theme/useThemeColors";
+import { hapticLight, hapticSuccess } from "../../lib/haptics";
 import { format } from "date-fns";
 import type { MealType } from "@ticktick/shared";
 
@@ -27,16 +28,16 @@ const mealIcons: Record<MealType, keyof typeof Ionicons.glyphMap> = {
   snack: "cafe-outline",
 };
 
-const mealColors: Record<MealType, string> = {
-  breakfast: colors.amber,
-  lunch: colors.sky,
-  dinner: colors.violet,
-  snack: colors.coral,
-};
-
 const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function NutritionScreen() {
+  const colors = useThemeColors();
+  const mealColors: Record<MealType, string> = {
+    breakfast: colors.amber,
+    lunch: colors.sky,
+    dinner: colors.violet,
+    snack: colors.coral,
+  };
   const today = format(new Date(), "yyyy-MM-dd");
   const { foodDatabase, addMeal, removeMeal, getDay } = useNutritionStore();
   const streakState = useStreakStore();
@@ -58,6 +59,7 @@ export default function NutritionScreen() {
   }, [day.meals.length, streakState]);
 
   const handleAdd = () => {
+    hapticSuccess();
     const food = foodDatabase.find((f) => f.id === selectedFood);
     if (!food) return;
     addMeal(today, {
@@ -178,6 +180,7 @@ export default function NutritionScreen() {
                   <Text style={{ fontSize: 12, color: colors.muted }}>{Math.round(totalCals)} kcal</Text>
                   <TouchableOpacity
                     onPress={() => {
+                      hapticLight();
                       setSelectedMealType(mealType);
                       setModalVisible(true);
                     }}
@@ -241,7 +244,10 @@ export default function NutritionScreen() {
               {mealTypes.map((mt) => (
                 <TouchableOpacity
                   key={mt}
-                  onPress={() => setSelectedMealType(mt)}
+                  onPress={() => {
+                    hapticLight();
+                    setSelectedMealType(mt);
+                  }}
                   style={{
                     flex: 1,
                     paddingVertical: 10,
@@ -275,7 +281,10 @@ export default function NutritionScreen() {
               style={{ maxHeight: 200, marginBottom: 12 }}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  onPress={() => setSelectedFood(item.id)}
+                  onPress={() => {
+                    hapticLight();
+                    setSelectedFood(item.id);
+                  }}
                   style={{
                     padding: 12,
                     borderRadius: 12,

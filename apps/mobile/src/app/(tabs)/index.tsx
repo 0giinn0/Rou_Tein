@@ -15,7 +15,8 @@ import { useStreakStore } from "../../store/streakStore";
 import { InteractiveSphere } from "../../components/InteractiveSphere";
 import { ProgressRing } from "../../components/ProgressRing";
 import { DailyQuiz } from "../../components/DailyQuiz";
-import { colors } from "../../theme/colors";
+import { useThemeColors } from "../../theme/useThemeColors";
+import { hapticLight } from "../../lib/haptics";
 import { format } from "date-fns";
 
 const { width } = Dimensions.get("window");
@@ -27,14 +28,14 @@ function getGreeting() {
   return "Good evening";
 }
 
-const links = [
-  { href: "/tasks" as const, label: "Tasks", icon: "list-outline" as const, color: colors.emerald },
-  { href: "/weather" as const, label: "Weather", icon: "cloud-outline" as const, color: colors.sky },
-  { href: "/nutrition" as const, label: "Nutrition", icon: "nutrition-outline" as const, color: colors.amber },
-];
-
 export default function HomeScreen() {
   const router = useRouter();
+  const colors = useThemeColors();
+  const links = [
+    { href: "/tasks" as const, label: "Tasks", icon: "list-outline" as const, color: colors.emerald },
+    { href: "/weather" as const, label: "Weather", icon: "cloud-outline" as const, color: colors.sky },
+    { href: "/nutrition" as const, label: "Nutrition", icon: "nutrition-outline" as const, color: colors.amber },
+  ];
   const streakState = useStreakStore();
   const { tasks } = useTaskStore();
   const { getDay } = useNutritionStore();
@@ -268,7 +269,10 @@ export default function HomeScreen() {
           {links.map((link) => (
             <TouchableOpacity
               key={link.href}
-              onPress={() => router.navigate(link.href as any)}
+              onPress={() => {
+                hapticLight();
+                router.navigate(link.href as any);
+              }}
               style={{
                 flexDirection: "row",
                 alignItems: "center",

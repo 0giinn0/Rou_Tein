@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTaskStore } from "../../store/taskStore";
 import { useStreakStore } from "../../store/streakStore";
-import { colors } from "../../theme/colors";
+import { useThemeColors } from "../../theme/useThemeColors";
+import { hapticLight, hapticSuccess } from "../../lib/haptics";
 import type { Task, TaskPriority } from "@ticktick/shared";
 import { format } from "date-fns";
 
@@ -19,18 +13,19 @@ function generateId() {
   return Math.random().toString(36).substring(2, 11);
 }
 
-const priorityColors: Record<TaskPriority, string> = {
-  high: colors.coral,
-  medium: colors.amber,
-  low: colors.emerald,
-};
-
 export default function TasksScreen() {
+  const colors = useThemeColors();
   const { tasks, addTask, updateTask, deleteTask } = useTaskStore();
   const streakState = useStreakStore();
   const [newTitle, setNewTitle] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority>("medium");
+
+  const priorityColors: Record<TaskPriority, string> = {
+    high: colors.coral,
+    medium: colors.amber,
+    low: colors.emerald,
+  };
 
   useEffect(() => {
     streakState.initializeDay();
@@ -49,6 +44,7 @@ export default function TasksScreen() {
 
   const handleAdd = () => {
     if (!newTitle.trim()) return;
+    hapticLight();
     const task: Task = {
       id: generateId(),
       title: newTitle,
@@ -69,8 +65,15 @@ export default function TasksScreen() {
   };
 
   const toggleTask = (id: string) => {
+    hapticLight();
     const task = tasks.find((t) => t.id === id);
-    if (task) updateTask(id, { status: task.status === "completed" ? "pending" : "completed" });
+    if (!task) return;
+    const willComplete = task.status !== "completed";
+    updateTask(id, { status: task.status === "completed" ? "pending" : "completed" });
+    if (willComplete) {
+      hapticSuccess();
+      streakState.completeTask();
+    }
   };
 
   const remaining = tasks.filter((t) => t.status !== "completed").length;
@@ -81,7 +84,6 @@ export default function TasksScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
       <View style={{ flex: 1, padding: 20 }}>
-        {/* Header */}
         <View style={{ marginBottom: 8 }}>
           <Text style={{ fontSize: 28, fontWeight: "800", color: colors.cream }}>Tasks</Text>
         </View>
@@ -89,7 +91,6 @@ export default function TasksScreen() {
           {remaining} remaining · {completedCount} completed
         </Text>
 
-        {/* Progress */}
         <View
           style={{
             backgroundColor: colors.surface,
@@ -112,13 +113,30 @@ export default function TasksScreen() {
           </Text>
         </View>
 
-        {/* Task List */}
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ gap: 10, paddingBottom: 100 }}
           ListEmptyComponent={
-            <Text style={{ textAlign: "center", color: colors.muted, marginTop: 40 }}>No tasks yet</Text>
+            <View style={{ alignItems: "center", marginTop: 60 }}>
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 32,
+                  backgroundColor: colors.surfaceVariant,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Ionicons name="checkbox-outline" size={36} color={colors.muted} />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: colors.cream, marginBottom: 6 }}>No tasks yet</Text>
+              <Text style={{ fontSize: 13, color: colors.muted, textAlign: "center" }}>
+                Tap the + button to add your first task and start your streak.
+              </Text>
+            </View>
           }
           renderItem={({ item }) => (
             <View
@@ -174,9 +192,11 @@ export default function TasksScreen() {
           )}
         />
 
-        {/* Floating Add Button */}
         <TouchableOpacity
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            hapticLight();
+            setModalVisible(true);
+          }}
           style={{
             position: "absolute",
             right: 20,
@@ -197,7 +217,6 @@ export default function TasksScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Add Task Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" }}>
           <View
@@ -234,7 +253,10 @@ export default function TasksScreen() {
               {(["low", "medium", "high"] as TaskPriority[]).map((p) => (
                 <TouchableOpacity
                   key={p}
-                  onPress={() => setSelectedPriority(p)}
+                  onPress={() => {
+                    hapticLight();
+                    setSelectedPriority(p);
+                  }}
                   style={{
                     flex: 1,
                     paddingVertical: 10,

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "rea
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useStreakStore } from "../../store/streakStore";
-import { colors } from "../../theme/colors";
+import { useThemeColors } from "../../theme/useThemeColors";
 import type { WeatherData } from "@ticktick/shared";
 
 const weatherIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -24,6 +24,7 @@ const weatherDescs: Record<number, string> = {
 };
 
 export default function WeatherScreen() {
+  const colors = useThemeColors();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const streakState = useStreakStore();

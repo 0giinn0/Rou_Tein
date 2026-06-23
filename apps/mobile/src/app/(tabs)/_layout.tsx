@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../theme/colors";
+import { useThemeColors } from "../../theme/useThemeColors";
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
+
   return (
     <Tabs
       screenOptions={{
@@ -49,6 +51,13 @@ export default function TabsLayout() {
         options={{
           title: "Nutrition",
           tabBarIcon: ({ color, size }) => <Ionicons name="nutrition-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />
     </Tabs>

@@ -7,6 +7,7 @@ interface TaskStore {
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
+  setTasks: (tasks: Task[]) => void;
 }
 
 const defaultLists: TaskList[] = [
@@ -24,4 +25,5 @@ export const useTaskStore = create<TaskStore>((set) => ({
       tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t)),
     })),
   deleteTask: (id) => set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
+  setTasks: (tasks) => set({ tasks }),
 }));

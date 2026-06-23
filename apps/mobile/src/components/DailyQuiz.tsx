@@ -11,13 +11,15 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useStreakStore } from "../store/streakStore";
 import { getDailyQuiz } from "@ticktick/shared";
-import { colors } from "../theme/colors";
+import { useThemeColors } from "../theme/useThemeColors";
+import { hapticLight, hapticSuccess, hapticError } from "../lib/haptics";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 export function DailyQuiz() {
+  const colors = useThemeColors();
   const { quizCompleted, quizScore, completeQuiz } = useStreakStore();
   const questions = useMemo(() => getDailyQuiz(), []);
 
@@ -33,15 +35,20 @@ export function DailyQuiz() {
 
   const handleSelect = (index: number) => {
     if (showExplanation || finished) return;
+    hapticLight();
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedOption(index);
     setShowExplanation(true);
     if (index === currentQuestion.correctIndex) {
+      hapticSuccess();
       setScore((s) => s + 1);
+    } else {
+      hapticError();
     }
   };
 
   const handleNext = () => {
+    hapticLight();
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedOption(null);
     setShowExplanation(false);

@@ -1,15 +1,24 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type {
-  DailyChallenge,
-  StreakState as StreakStateBase,
-} from "@ticktick/shared";
+import type { DailyChallenge, StreakState as StreakStateBase } from "@ticktick/shared";
 import {
   defaultChallenges,
   getXpForLevel,
   getTodayKey,
+  BADGES,
+  THEMES,
+  STREAK_FREEZE_COST,
+  getLevelReward,
+  getBadgeById,
 } from "@ticktick/shared";
+
+interface UnlockResult {
+  badgeId?: string;
+  leveledUp?: boolean;
+  newLevel?: number;
+  rewardCoins?: number;
+}
 
 interface StreakStore extends StreakStateBase {
   initializeDay: () => void;
@@ -21,6 +30,50 @@ interface StreakStore extends StreakStateBase {
   getXpToNextLevel: () => number;
   getProgressToNextLevel: () => number;
   getTodayProgress: () => number;
+  buyTheme: (themeId: string) => boolean;
+  setActiveTheme: (themeId: string) => void;
+  buyStreakFreeze: () => boolean;
+  useStreakFreeze: () => boolean;
+  completeTask: () => UnlockResult;
+}
+
+function addXp(
+  state: StreakStateBase,
+  xpGain: number
+): { xp: number; level: number; leveledUp: boolean; newLevel: number; rewardCoins: number } {
+  let newXp = state.xp + xpGain;
+  let newLevel = state.level;
+  let leveledUp = false;
+  let rewardCoins = 0;
+
+  while (newXp >= getXpForLevel(newLevel)) {
+    newXp -= getXpForLevel(newLevel);
+    newLevel += 1;
+    leveledUp = true;
+    rewardCoins += getLevelReward(newLevel).coins;
+  }
+
+  return { xp: newXp, level: newLevel, leveledUp, newLevel, rewardCoins };
+}
+
+function checkBadges(state: StreakStateBase): string[] {
+  const newlyUnlocked: string[] = [];
+  const has = (id: string) => state.badges.includes(id);
+  const unlock = (id: string) => {
+    if (!has(id)) newlyUnlocked.push(id);
+  };
+
+  if (state.totalTasksCompleted >= 1) unlock("first-task");
+  if (state.totalTasksCompleted >= 50) unlock("task-machine");
+  if (state.streak >= 3) unlock("streak-3");
+  if (state.streak >= 7) unlock("streak-7");
+  if (state.streak >= 30) unlock("streak-30");
+  if (state.perfectDays >= 1) unlock("perfect-day");
+  if (state.level >= 5) unlock("level-5");
+  if (state.level >= 10) unlock("level-10");
+  if (state.coins >= 500) unlock("coin-collector");
+
+  return newlyUnlocked;
 }
 
 export const useStreakStore = create<StreakStore>()(
@@ -37,6 +90,11 @@ export const useStreakStore = create<StreakStore>()(
       quizScore: 0,
       quizzesTakenToday: 0,
       perfectDays: 0,
+      badges: [],
+      unlockedThemes: ["default"],
+      activeTheme: "default",
+      streakFreeze: 0,
+      totalTasksCompleted: 0,
 
       initializeDay: () => {
         const today = getTodayKey();
@@ -52,8 +110,13 @@ export const useStreakStore = create<StreakStore>()(
         if (state.lastActiveDate === yesterdayKey) {
           newStreak = state.streak + 1;
         } else if (state.lastActiveDate !== today) {
+          if (state.streakFreeze > 0 && !state.badges.includes("frozen-day")) {
+            // auto-use streak freeze is handled by useStreakFreeze
+          }
           newStreak = 1;
         }
+
+        const newBadges = checkBadges({ ...state, streak: newStreak });
 
         set({
           challenges: defaultChallenges.map((c) => ({ ...c, completed: false })),
@@ -63,6 +126,7 @@ export const useStreakStore = create<StreakStore>()(
           streak: newStreak,
           longestStreak: Math.max(state.longestStreak, newStreak),
           lastActiveDate: today,
+          badges: Array.from(new Set([...state.badges, ...newBadges])),
         });
       },
 
@@ -81,14 +145,8 @@ export const useStreakStore = create<StreakStore>()(
           c.id === id ? { ...c, completed: true, completedAt } : c
         );
 
-        let newXp = state.xp + challenge.xpReward;
-        let newLevel = state.level;
-        let newCoins = state.coins + challenge.coinReward;
-
-        while (newXp >= getXpForLevel(newLevel)) {
-          newXp -= getXpForLevel(newLevel);
-          newLevel += 1;
-        }
+        const { xp, level, leveledUp, newLevel, rewardCoins } = addXp(state, challenge.xpReward);
+        const totalCoins = state.coins + challenge.coinReward + rewardCoins;
 
         const allCompleted = newChallenges.every((c) => c.completed);
         const newPerfectDays =
@@ -96,12 +154,22 @@ export const useStreakStore = create<StreakStore>()(
             ? state.perfectDays + 1
             : state.perfectDays;
 
+        const tempState = {
+          ...state,
+          xp,
+          level,
+          coins: totalCoins,
+          perfectDays: newPerfectDays,
+        };
+        const newBadges = checkBadges(tempState);
+
         set({
           challenges: newChallenges,
-          xp: newXp,
-          level: newLevel,
-          coins: newCoins,
+          xp,
+          level,
+          coins: totalCoins,
           perfectDays: newPerfectDays,
+          badges: Array.from(new Set([...state.badges, ...newBadges])),
         });
       },
 
@@ -114,22 +182,26 @@ export const useStreakStore = create<StreakStore>()(
         const xpGain = Math.round(40 * pct);
         const coinGain = Math.round(15 * pct);
 
-        let newXp = state.xp + xpGain;
-        let newLevel = state.level;
-        let newCoins = state.coins + coinGain;
+        const { xp, level, leveledUp, newLevel, rewardCoins } = addXp(state, xpGain);
+        const totalCoins = state.coins + coinGain + rewardCoins;
 
-        while (newXp >= getXpForLevel(newLevel)) {
-          newXp -= getXpForLevel(newLevel);
-          newLevel += 1;
-        }
+        const quizBadge = pct === 1 ? "quiz-genius" : undefined;
+        const newBadges = checkBadges({
+          ...state,
+          xp,
+          level,
+          coins: totalCoins,
+        });
+        if (quizBadge) newBadges.push(quizBadge);
 
         set({
           quizCompleted: true,
           quizScore: score,
           quizzesTakenToday: state.quizzesTakenToday + 1,
-          xp: newXp,
-          level: newLevel,
-          coins: newCoins,
+          xp,
+          level,
+          coins: totalCoins,
+          badges: Array.from(new Set([...state.badges, ...newBadges])),
         });
 
         get().completeChallenge("daily-quiz");
@@ -156,6 +228,55 @@ export const useStreakStore = create<StreakStore>()(
         const completed = get().challenges.filter((c) => c.completed).length;
         return Math.round((completed / get().challenges.length) * 100);
       },
+
+      buyTheme: (themeId) => {
+        const state = get();
+        const theme = THEMES.find((t) => t.id === themeId);
+        if (!theme || state.unlockedThemes.includes(themeId) || state.coins < theme.cost) {
+          return false;
+        }
+        set({
+          coins: state.coins - theme.cost,
+          unlockedThemes: [...state.unlockedThemes, themeId],
+          activeTheme: themeId,
+        });
+        return true;
+      },
+
+      setActiveTheme: (themeId) => {
+        if (get().unlockedThemes.includes(themeId)) {
+          set({ activeTheme: themeId });
+        }
+      },
+
+      buyStreakFreeze: () => {
+        const state = get();
+        if (state.coins < STREAK_FREEZE_COST) return false;
+        set({ coins: state.coins - STREAK_FREEZE_COST, streakFreeze: state.streakFreeze + 1 });
+        return true;
+      },
+
+      useStreakFreeze: () => {
+        const state = get();
+        const today = getTodayKey();
+        if (state.streakFreeze <= 0 || state.lastActiveDate === today) return false;
+        set({
+          streakFreeze: state.streakFreeze - 1,
+          lastActiveDate: today,
+        });
+        return true;
+      },
+
+      completeTask: () => {
+        const state = get();
+        const totalTasksCompleted = state.totalTasksCompleted + 1;
+        const newBadges = checkBadges({ ...state, totalTasksCompleted });
+        set({ totalTasksCompleted, badges: Array.from(new Set([...state.badges, ...newBadges])) });
+
+        const result: UnlockResult = {};
+        if (newBadges.length > 0) result.badgeId = newBadges[0];
+        return result;
+      },
     }),
     {
       name: "routtein-mobile-streaks",
@@ -172,6 +293,11 @@ export const useStreakStore = create<StreakStore>()(
         quizScore: state.quizScore,
         quizzesTakenToday: state.quizzesTakenToday,
         perfectDays: state.perfectDays,
+        badges: state.badges,
+        unlockedThemes: state.unlockedThemes,
+        activeTheme: state.activeTheme,
+        streakFreeze: state.streakFreeze,
+        totalTasksCompleted: state.totalTasksCompleted,
       }),
     }
   )
