@@ -1,108 +1,136 @@
 # Rou_Tein
 
-A habit-building productivity app with streaks, daily challenges, quizzes, tasks, nutrition tracking, and weather insights. Built as a cross-platform **React Native mobile app** with an accompanying **Next.js web app**, sharing core logic through a local monorepo package.
+*or: how I learned to stop doom-scrolling and actually do stuff*
 
-![Build Status](https://img.shields.io/badge/build-passing-success)
+Listen. You've downloaded 47 productivity apps. You've tried bullet journals, time-blocking, and that one guy on YouTube who wakes up at 4 AM to take an ice bath. None of it stuck. That's fine. We're not judging. (We're totally judging.)
 
-## Features
+Rou_Tein is a habit tracker that actually tries to be fun. It bribes you with XP, fake internet coins, and pretty colors. It has a spinning 3D sphere that changes color when you do your chores, which is the dumbest motivation system ever invented and yet somehow it works. It also tracks your meals, tells you the weather, and has a seven-day workout plan so you can finally do that push-up you've been putting off since 2019.
 
-- **Streak Counter** — Track your current streak, longest streak, level, XP, and coins
-- **Daily Challenges** — Complete tasks, log meals, check weather, and finish the daily quiz to earn rewards
-- **Daily Quiz** — 5 fresh questions every day with explanations
-- **Interactive Three.js Sphere** — A reactive 3D sphere on the home dashboard that responds to touch and changes color based on your daily progress
-- **Tasks** — TickTick-style task list with priorities and completion tracking
-- **Nutrition** — Macro rings and meal logging by breakfast, lunch, dinner, and snacks
-- **Weather** — 7-day forecast, current conditions, and a gamified weather challenge
-- **Gamification** — Badges, unlockable themes, level-up rewards, and streak freeze protection
-- **Cloud Sync** — Back up and restore your tasks and streaks with Supabase
-- **Push Notifications** — Daily reminders and streak warnings
-- **Shared Logic** — Streak state, quiz data, and types live in `packages/shared` and are consumed by both mobile and web
+Built with React Native for your phone, with a Next.js web app for your desktop, because we believe in cross-platform suffering.
 
-## Project Structure
+![Build Status](https://github.com/0giinn0/Rou_Tein/actions/workflows/ci.yml/badge.svg)
+
+---
+
+## What This Thing Actually Does
+
+- **Dopamine Dispenser (Streaks)** — Current streak, longest streak, level, XP, coins. It's basically a Tamagotchi for your self-worth.
+- **Daily Challenges** — Four things to do every day. Complete them all and you get a Perfect Day badge. You will become insufferable about this.
+- **Daily Quiz** — 5 questions. Different every day. Scored. You don't have to be smart — but it helps.
+- **The Spinny Orb** — A Three.js sphere on the homepage that reacts to your touch and changes color based on your progress. It serves no practical purpose. We will not be taking questions.
+- **Tasks** — A to-do list with priorities and completion tracking. You know, the thing every app has. Ours just looks better.
+- **Nutrition** — Log food by meal type. Track calories, protein, carbs, fat. The macro rings will guilt you into eating a vegetable.
+- **Weather** — 7-day forecast, temperature wave chart, seasonal background effects. In winter it snows on the screen. In summer the waves pulse. It's completely unnecessary. You'll love it.
+- **Workouts** — A pre-built 7-day calisthenics program, plus a custom workout builder with 100+ exercises. You can finally stop watching fitness reels and actually do a Bulgarian split squat.
+- **Pomodoro Timer** — 25-minute focus sessions with a satisfying animated ring. Completing sessions earns XP. Your ADHD just met its match.
+- **Gamification** — Badges, unlockable color themes, streak freeze items. It's a video game where the boss fight is your crippling procrastination.
+- **Dark/Light Mode** — System-aware theming, plus custom color palettes you can buy with in-app coins. Capitalism, but make it aesthetic.
+
+## Stuff We Used
+
+| Layer | The Tech | Why |
+|-------|----------|-----|
+| Mobile | React Native, Expo SDK 51, Expo Router | Because rewriting the app twice in Swift and Kotlin sounded like a bad Tuesday |
+| Web | Next.js 14, Tailwind CSS | Static export, zero runtime, loads faster than your morning coffee |
+| 3D | `@react-three/fiber`, Three.js | For the spinny orb. *Obviously.* |
+| State | Zustand | Because Redux is a war crime |
+| Animations | `react-native-reanimated`, Framer Motion | Things go *whoosh* instead of *clunk* |
+| Backend | Supabase | Optional. Only if you want your streaks to survive a phone wipe. |
+| CI/CD | GitHub Actions | Lints, tests, builds on every push. Also builds APKs and IPAs via EAS. Yes, *GitHub* builds your phone apps now. The future is weird. |
+
+## The Filing Cabinet (`/project-structure`)
 
 ```
 Habit Tracking Application/
 ├── apps/
-│   ├── mobile/          # Expo Router React Native app (primary)
-│   ├── web/             # Next.js web app
-│   └── watch/           # Companion watch-face web app
+│   ├── mobile/          # The actual app. Expo Router. The main character.
+│   ├── web/             # Next.js web version. The supporting actor.
+│   └── watch/           # Watch-face companion. The quirky spin-off.
 ├── packages/
-│   ├── shared/          # Shared types, quiz data, and streak utilities
-│   └── ui/              # Shared React UI components (web)
+│   ├── shared/          # Types, quiz data, streak logic. One brain, two bodies.
+│   └── ui/              # Shared web components. Reusable, like Tupperware.
 ├── supabase/
-│   └── migrations/      # Database schema migrations
-├── package.json         # Workspace root
-└── README.md
+│   └── migrations/      # Database schema. Run these if you want cloud sync.
+├── .github/workflows/   # CI, APK builds, iOS builds. The robots do the work now.
+└── README.md            # You are here. Congrats.
 ```
 
-## Tech Stack
-
-- **Mobile:** React Native, Expo Router, TypeScript, Zustand, `@react-three/fiber/native`, `expo-gl`, Three.js, `react-native-reanimated`, `expo-haptics`, `expo-notifications`
-- **Web:** Next.js 14, React, TypeScript, Tailwind CSS, Zustand, `@react-three/fiber`, Framer Motion
-- **Backend:** Supabase (Postgres + Auth)
-- **Shared:** TypeScript utilities consumed by both apps
-
-## Getting Started
+## How to Make It Go
 
 ### Prerequisites
 
-- Node.js 18+
-- npm
-- Expo Go app (for mobile development)
-- Supabase project (for cloud sync)
+- Node.js 18+ (or 20, we're not your mom)
+- npm (comes with Node, you probably have it)
+- Expo Go app on your phone (free on both app stores)
+- A Supabase project (only if you want cloud sync — totally optional)
+- A pulse (negotiable)
 
-### Install Dependencies
-
-From the repository root:
+### One Command, That's It
 
 ```bash
 npm install --legacy-peer-deps
 ```
 
-### Environment Variables
+The `--legacy-peer-deps` flag is there because some dependencies haven't been updated since the Obama administration. It's fine. Everything works. Trust me. <sub><sup>(Famous last words.)</sup></sub>
 
-Create `apps/mobile/.env.local` with your Supabase credentials:
+### Fire It Up
 
-```bash
-EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### Run the Mobile App
+**Phone:**
 
 ```bash
 cd apps/mobile
 npx expo start
 ```
 
-- Scan the QR code with **Expo Go** on iOS or Android
-- Press `i` to open in an iOS simulator
-- Press `a` to open in an Android emulator
+Scan the QR code with Expo Go. Ta-da. You're a developer now.
 
-### Run the Web App
+**Browser:**
 
 ```bash
 cd apps/web
 npm run dev
 ```
 
-Then open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`. The web version renders server-side and then mentally checks out. (It's a static export.)
 
-### Run Tests
+**Tests:**
 
 ```bash
 npm test
 ```
 
-### Build for Production
+13 tests. All passing. If they're not, something has gone terribly wrong and you should probably run `git blame`.
 
-**Mobile (EAS):**
+### Environment Variables (for cloud sync)
+
+Create `apps/mobile/.env.local`:
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://your-actual-project-url.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-actual-anon-key-not-a-fake-one
+```
+
+Without this, the app still works fine. Your data just stays local, like a hermit with commitment issues.
+
+### Build for the App Stores
+
+**Android APK:**
 
 ```bash
 cd apps/mobile
-eas build --platform ios
-eas build --platform android
+eas build --platform android --profile preview
 ```
+
+Or just click the shiny **Build APK** button in GitHub Actions. Either way, you get an `.apk` you can sideload onto any Android device. (Enable "Unknown sources" in Settings first. We're not Apple.)
+
+**iOS:**
+
+```bash
+cd apps/mobile
+eas build --platform ios --profile production --auto-submit
+```
+
+Requires an Apple Developer account. The build auto-submits to TestFlight. If you don't have an Apple Developer account, this is the part where you give Apple $99/year for the privilege of installing your own app on your own phone. Don't think about it too hard.
 
 **Web:**
 
@@ -111,25 +139,47 @@ cd apps/web
 npm run build
 ```
 
-## Daily Challenges
+Static HTML in `apps/web/dist/`. Deploy it anywhere. Vercel, Netlify, your cousin's Raspberry Pi. It doesn't care.
 
-| Challenge | Requirement | Reward |
-|-----------|-------------|--------|
-| Task Master | Complete 3 tasks today | 30 XP, 10 coins |
-| Nutrition Log | Log one meal today | 20 XP, 5 coins |
-| Weather Watcher | Check today's weather | 15 XP, 5 coins |
-| Brain Boost | Complete the daily quiz | 40 XP, 15 coins |
+### GitHub Actions Secrets
 
-## Gamification
+| Secret | Used by | Why |
+|--------|---------|-----|
+| `EXPO_TOKEN` | APK & iOS builds | So GitHub can talk to Expo on your behalf. Generate at https://expo.dev/settings/access-tokens |
+| `APPLE_APP_SPECIFIC_PASSWORD` | iOS TestFlight submit | Apple's way of saying "we don't trust you, prove it again" |
 
-- **Badges** — Unlock achievements for streaks, levels, perfect days, and more
-- **Themes** — Spend coins to unlock color themes
-- **Streak Freeze** — Buy protection for missed days
-- **Level Rewards** — Earn bonus coins every time you level up
+Put these in **Settings → Secrets and variables → Actions**. No, not in the code. *Never* in the code.
 
-## Notes
+## The Bribery System (Daily Challenges)
 
-- The mobile app is the primary target and uses Expo SDK 51.
-- The web app is maintained alongside mobile and shares streak/quiz logic through `packages/shared`.
-- Streak progress is persisted on mobile using `@react-native-async-storage/async-storage` and on web using `localStorage` via Zustand persist.
-- Cloud sync is optional and requires a Supabase project. Apply the migrations in `supabase/migrations/` to your project.
+| Challenge | What you do | What you get |
+|-----------|------------|--------------|
+| Task Master | Complete 3 tasks | 30 XP, 10 coins |
+| Nutrition Log | Log one meal | 20 XP, 5 coins |
+| Weather Watcher | Check the weather | 15 XP, 5 coins |
+| Brain Boost | Finish the daily quiz | 40 XP, 15 coins |
+
+Four things. That's it. If you can't do four things, you have bigger problems than this README can solve.
+
+## The Casino Mechanics (Gamification)
+
+- **Badges** — Unlock them for hitting streak milestones, leveling up, or just sticking around long enough. They make a satisfying pop. That's the dopamine. Don't fight it.
+- **Themes** — Four color themes (Midnight, Ocean, Sunset, Forest, Royal). The first one's free. The rest cost coins. We're basically a mobile game without the microtransactions. *For now.*
+- **Streak Freeze** — 100 coins to protect your streak from a missed day. It's like cheating, but we allow it.
+- **Level Rewards** — Every time you level up, you get bonus coins. The XP curve is exponential, which means level 50 is mathematically possible but we haven't seen it happen yet. Be the first.
+
+## Known Issues (aka "Features")
+
+- The `react-native-screens` postinstall script used to fail on some setups. We fixed it by upgrading to 3.31.1, which was three characters of change and an hour of debugging. Software development is beautiful.
+- The 3D sphere uses `expo-gl`, which works on real devices but might throw shade on certain emulators. That's the emulator's problem, not ours.
+- The seasonal effects (snow in winter, blossoms in spring, etc.) use your phone's clock. If you set your phone to December in July, it will snow. This is a feature, not a bug. We're calling it "climate skepticism mode."
+- Cloud sync is opt-in because some people (correctly) don't want their breakfast logs sitting on a server in Iowa.
+- The workout section has 100+ exercises. If you scroll through all of them instead of working out, that's a you problem.
+
+## The Legal Bit No One Reads
+
+This project is private. If you're reading this and you're not supposed to be, congratulations on your investigative skills. Here's your reward: 🏆
+
+---
+
+*Built with caffeine, spite, and an unhealthy amount of TypeScript.*
