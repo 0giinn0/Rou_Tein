@@ -5,6 +5,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useStreakStore } from "../../store/streakStore";
 import { useThemeColors } from "../../theme/useThemeColors";
 import { WeatherSkeleton } from "../../components/Skeleton";
+import { TemperatureWave } from "../../components/TemperatureWave";
+import { SeasonalEffects } from "../../components/SeasonalEffects";
 import type { WeatherData } from "@ticktick/shared";
 
 const weatherIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -80,7 +82,7 @@ export default function WeatherScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
         <WeatherSkeleton />
       </SafeAreaView>
     );
@@ -88,6 +90,7 @@ export default function WeatherScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={["top"]}>
+      <SeasonalEffects />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
@@ -209,6 +212,15 @@ export default function WeatherScreen() {
                 )}
               </View>
             </View>
+
+            {/* Temperature Wave */}
+            <TemperatureWave
+              data={weather.forecast.map((d) => ({
+                label: new Date(d.date).toLocaleDateString("en", { weekday: "short" }),
+                tempHigh: d.tempHigh,
+                tempLow: d.tempLow,
+              }))}
+            />
 
             {/* Forecast */}
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.cream, marginBottom: 12 }}>7-Day Forecast</Text>
