@@ -41,6 +41,7 @@ export const useStreakStore = create<StreakStore>()(
       activeTheme: "default",
       streakFreeze: 0,
       totalTasksCompleted: 0,
+      colorScheme: "system",
 
       initializeDay: () => {
         const today = getTodayKey();
@@ -180,6 +181,7 @@ export const useStreakStore = create<StreakStore>()(
         activeTheme: state.activeTheme,
         streakFreeze: state.streakFreeze,
         totalTasksCompleted: state.totalTasksCompleted,
+        colorScheme: state.colorScheme,
       }),
     }
   )

@@ -35,6 +35,7 @@ interface StreakStore extends StreakStateBase {
   buyStreakFreeze: () => boolean;
   useStreakFreeze: () => boolean;
   completeTask: () => UnlockResult;
+  setColorScheme: (scheme: "system" | "light" | "dark") => void;
 }
 
 function addXp(
@@ -95,6 +96,7 @@ export const useStreakStore = create<StreakStore>()(
       activeTheme: "default",
       streakFreeze: 0,
       totalTasksCompleted: 0,
+      colorScheme: "system",
 
       initializeDay: () => {
         const today = getTodayKey();
@@ -277,6 +279,8 @@ export const useStreakStore = create<StreakStore>()(
         if (newBadges.length > 0) result.badgeId = newBadges[0];
         return result;
       },
+
+      setColorScheme: (scheme) => set({ colorScheme: scheme }),
     }),
     {
       name: "routtein-mobile-streaks",
@@ -298,6 +302,7 @@ export const useStreakStore = create<StreakStore>()(
         activeTheme: state.activeTheme,
         streakFreeze: state.streakFreeze,
         totalTasksCompleted: state.totalTasksCompleted,
+        colorScheme: state.colorScheme,
       }),
     }
   )

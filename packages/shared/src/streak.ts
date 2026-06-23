@@ -35,6 +35,7 @@ export interface StreakState {
   activeTheme: string;
   streakFreeze: number;
   totalTasksCompleted: number;
+  colorScheme: "system" | "light" | "dark";
 }
 
 export const LEVEL_XP_BASE = 100;

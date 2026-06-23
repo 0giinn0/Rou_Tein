@@ -5,3 +5,4 @@ export * from "./streak";
 export * from "./quizData";
 export * from "./gamification";
 export * from "./workout";
+export * from "./exercises";

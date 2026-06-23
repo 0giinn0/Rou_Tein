@@ -302,6 +302,53 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Appearance */}
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 24,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: colors.border,
+            marginBottom: 20,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <Ionicons name="sunny-outline" size={18} color={colors.amber} />
+            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.cream }}>Appearance</Text>
+          </View>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {(["system", "light", "dark"] as const).map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                onPress={() => {
+                  hapticLight();
+                  state.setColorScheme(mode);
+                }}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 14,
+                  backgroundColor: state.colorScheme === mode ? colors.cream : colors.surfaceVariant,
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
+              >
+                <Ionicons
+                  name={mode === "system" ? "settings-outline" : mode === "light" ? "sunny" : "moon"}
+                  size={14}
+                  color={state.colorScheme === mode ? colors.bg : colors.muted}
+                />
+                <Text style={{ fontSize: 13, fontWeight: "700", color: state.colorScheme === mode ? colors.bg : colors.muted, textTransform: "capitalize" }}>
+                  {mode}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Badges */}
         <View style={{ marginBottom: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
