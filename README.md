@@ -2,11 +2,11 @@
 
 *or: how I learned to stop doom-scrolling and actually do stuff*
 
-Listen. You've downloaded 47 productivity apps. You've tried bullet journals, time-blocking, and that one guy on YouTube who wakes up at 4 AM to take an ice bath. None of it stuck. That's fine. We're not judging. (We're totally judging.)
+Listen. You've downloaded 47 productivity apps. You've tried bullet journals, time-blocking, and that one guy on YouTube who wakes up at 4 AM to take an ice bath. None of it stuck. That's fine. I'm not judging. (I'm totally judging.)
 
 Rou_Tein is a habit tracker that actually tries to be fun. It bribes you with XP, fake internet coins, and pretty colors. It has a spinning 3D sphere that changes color when you do your chores, which is the dumbest motivation system ever invented and yet somehow it works. It also tracks your meals, tells you the weather, and has a seven-day workout plan so you can finally do that push-up you've been putting off since 2019.
 
-Built with React Native for your phone, with a Next.js web app for your desktop, because we believe in cross-platform suffering.
+Built with React Native for your phone, with a Next.js web app for your desktop, because I believe in cross-platform suffering.
 
 ![Build Status](https://github.com/0giinn0/Rou_Tein/actions/workflows/ci.yml/badge.svg)
 
@@ -17,8 +17,8 @@ Built with React Native for your phone, with a Next.js web app for your desktop,
 - **Dopamine Dispenser (Streaks)** — Current streak, longest streak, level, XP, coins. It's basically a Tamagotchi for your self-worth.
 - **Daily Challenges** — Four things to do every day. Complete them all and you get a Perfect Day badge. You will become insufferable about this.
 - **Daily Quiz** — 5 questions. Different every day. Scored. You don't have to be smart — but it helps.
-- **The Spinny Orb** — A Three.js sphere on the homepage that reacts to your touch and changes color based on your progress. It serves no practical purpose. We will not be taking questions.
-- **Tasks** — A to-do list with priorities and completion tracking. You know, the thing every app has. Ours just looks better.
+- **The Spinny Orb** — A Three.js sphere on the homepage that reacts to your touch and changes color based on your progress. It serves no practical purpose. I will not be taking questions.
+- **Tasks** — A to-do list with priorities and completion tracking. You know, the thing every app has. Mine just looks better.
 - **Nutrition** — Log food by meal type. Track calories, protein, carbs, fat. The macro rings will guilt you into eating a vegetable.
 - **Weather** — 7-day forecast, temperature wave chart, seasonal background effects. In winter it snows on the screen. In summer the waves pulse. It's completely unnecessary. You'll love it.
 - **Workouts** — A pre-built 7-day calisthenics program, plus a custom workout builder with 100+ exercises. You can finally stop watching fitness reels and actually do a Bulgarian split squat.
@@ -26,7 +26,7 @@ Built with React Native for your phone, with a Next.js web app for your desktop,
 - **Gamification** — Badges, unlockable color themes, streak freeze items. It's a video game where the boss fight is your crippling procrastination.
 - **Dark/Light Mode** — System-aware theming, plus custom color palettes you can buy with in-app coins. Capitalism, but make it aesthetic.
 
-## Stuff We Used
+## Stuff I Used
 
 | Layer | The Tech | Why |
 |-------|----------|-----|
@@ -59,7 +59,7 @@ Habit Tracking Application/
 
 ### Prerequisites
 
-- Node.js 18+ (or 20, we're not your mom)
+- Node.js 18+ (or 20, I'm not your mom)
 - npm (comes with Node, you probably have it)
 - Expo Go app on your phone (free on both app stores)
 - A Supabase project (only if you want cloud sync — totally optional)
@@ -121,7 +121,7 @@ cd apps/mobile
 eas build --platform android --profile preview
 ```
 
-Or just click the shiny **Build APK** button in GitHub Actions. Either way, you get an `.apk` you can sideload onto any Android device. (Enable "Unknown sources" in Settings first. We're not Apple.)
+Or just click the shiny **Build APK** button in GitHub Actions. Either way, you get an `.apk` you can sideload onto any Android device. (Enable "Unknown sources" in Settings first. I'm not Apple.)
 
 **iOS:**
 
@@ -164,15 +164,15 @@ Four things. That's it. If you can't do four things, you have bigger problems th
 ## The Casino Mechanics (Gamification)
 
 - **Badges** — Unlock them for hitting streak milestones, leveling up, or just sticking around long enough. They make a satisfying pop. That's the dopamine. Don't fight it.
-- **Themes** — Four color themes (Midnight, Ocean, Sunset, Forest, Royal). The first one's free. The rest cost coins. We're basically a mobile game without the microtransactions. *For now.*
-- **Streak Freeze** — 100 coins to protect your streak from a missed day. It's like cheating, but we allow it.
-- **Level Rewards** — Every time you level up, you get bonus coins. The XP curve is exponential, which means level 50 is mathematically possible but we haven't seen it happen yet. Be the first.
+- **Themes** — Four color themes (Midnight, Ocean, Sunset, Forest, Royal). The first one's free. The rest cost coins. I'm basically a mobile game without the microtransactions. *For now.*
+- **Streak Freeze** — 100 coins to protect your streak from a missed day. It's like cheating, but I allow it.
+- **Level Rewards** — Every time you level up, you get bonus coins. The XP curve is exponential, which means level 50 is mathematically possible but I haven't seen it happen yet. Be the first.
 
 ## Known Issues (aka "Features")
 
-- The `react-native-screens` postinstall script used to fail on some setups. We fixed it by upgrading to 3.31.1, which was three characters of change and an hour of debugging. Software development is beautiful.
-- The 3D sphere uses `expo-gl`, which works on real devices but might throw shade on certain emulators. That's the emulator's problem, not ours.
-- The seasonal effects (snow in winter, blossoms in spring, etc.) use your phone's clock. If you set your phone to December in July, it will snow. This is a feature, not a bug. We're calling it "climate skepticism mode."
+- The `react-native-screens` postinstall script used to fail on some setups. I fixed it by upgrading to 3.31.1, which was three characters of change and an hour of debugging. Software development is beautiful.
+- The 3D sphere uses `expo-gl`, which works on real devices but might throw shade on certain emulators. That's the emulator's problem, not mine.
+- The seasonal effects (snow in winter, blossoms in spring, etc.) use your phone's clock. If you set your phone to December in July, it will snow. This is a feature, not a bug. I'm calling it "climate skepticism mode."
 - Cloud sync is opt-in because some people (correctly) don't want their breakfast logs sitting on a server in Iowa.
 - The workout section has 100+ exercises. If you scroll through all of them instead of working out, that's a you problem.
 
