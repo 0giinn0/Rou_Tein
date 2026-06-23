@@ -36,6 +36,11 @@ export const useStreakStore = create<StreakStore>()(
       quizScore: 0,
       quizzesTakenToday: 0,
       perfectDays: 0,
+      badges: [],
+      unlockedThemes: ["default"],
+      activeTheme: "default",
+      streakFreeze: 0,
+      totalTasksCompleted: 0,
 
       initializeDay: () => {
         const today = getTodayKey();
@@ -170,6 +175,11 @@ export const useStreakStore = create<StreakStore>()(
         quizScore: state.quizScore,
         quizzesTakenToday: state.quizzesTakenToday,
         perfectDays: state.perfectDays,
+        badges: state.badges,
+        unlockedThemes: state.unlockedThemes,
+        activeTheme: state.activeTheme,
+        streakFreeze: state.streakFreeze,
+        totalTasksCompleted: state.totalTasksCompleted,
       }),
     }
   )

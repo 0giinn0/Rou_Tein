@@ -30,6 +30,11 @@ export interface StreakState {
   quizScore: number;
   quizzesTakenToday: number;
   perfectDays: number;
+  badges: string[];
+  unlockedThemes: string[];
+  activeTheme: string;
+  streakFreeze: number;
+  totalTasksCompleted: number;
 }
 
 export const LEVEL_XP_BASE = 100;
