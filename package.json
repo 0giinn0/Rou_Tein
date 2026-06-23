@@ -1,0 +1,13 @@
+{
+  "name": "rou-tein",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "framer-motion": "^12.40.0",
+    "three": "^0.160.0"
+  }
+}

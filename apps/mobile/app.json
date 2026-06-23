@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Rou_Tein",
+    "slug": "rou-tein",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "routtein",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#070707"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.routtein.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#070707"
+      },
+      "package": "com.routtein.app"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

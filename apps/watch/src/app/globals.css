@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background: #1a1a2e;
+  color: #f9fafb;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+/* Watch-specific: rounded, playful theme */
+.watch-bg {
+  background: linear-gradient(135deg, #2abfbf 0%, #1aadaa 100%);
+}
+
+.watch-card {
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.watch-button {
+  border-radius: 9999px;
+  transition: all 0.15s;
+}
+.watch-button:active {
+  transform: scale(0.95);
+}
