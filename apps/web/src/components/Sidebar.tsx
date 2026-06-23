@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LayoutDashboard, ListTodo, Cloud, Apple } from "lucide-react";
+import { LayoutDashboard, ListTodo, Cloud, Apple, Download } from "lucide-react";
 
 const navItems = [
   { id: "dashboard", label: "Home", icon: LayoutDashboard, href: "/" },
   { id: "tasks", label: "Tasks", icon: ListTodo, href: "/tasks" },
   { id: "weather", label: "Weather", icon: Cloud, href: "/weather" },
   { id: "nutrition", label: "Nutrition", icon: Apple, href: "/nutrition" },
+  { id: "downloads", label: "Downloads", icon: Download, href: "/downloads" },
 ];
 
 export function Sidebar({ currentPath, onNavigate }: { currentPath: string; onNavigate: (path: string) => void }) {
